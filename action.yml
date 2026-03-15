@@ -1,5 +1,5 @@
 name: "contribution-graph-art"
-description: "Generate an animated contribution graph SVG with falling tetrominoes and optional logo overlay"
+description: "Generate an animated contribution graph SVG with falling tetrominoes or a classic Snake game overlay"
 author: "leereilly"
 branding:
   icon: "grid"
@@ -18,9 +18,17 @@ inputs:
     required: false
     default: "dist/contribution-graph.svg"
   tetromino_count:
-    description: "Number of falling tetrominoes (0–9)"
+    description: "Number of falling tetrominoes (0–9, tetromino mode only)"
     required: false
     default: "3"
+  animation_mode:
+    description: "Animation mode ('tetromino' or 'snake')"
+    required: false
+    default: "tetromino"
+  food_count:
+    description: "Number of red food squares for the snake to eat (1–15, snake mode only)"
+    required: false
+    default: "5"
   logo:
     description: "Logo to overlay on the grid (e.g., 'microsoft', 'none')"
     required: false
@@ -34,7 +42,7 @@ inputs:
     required: false
     default: "auto"
   animation_duration:
-    description: "Total animation duration in seconds"
+    description: "Total animation duration in seconds (tetromino mode only; snake mode auto-calculates)"
     required: false
     default: "6.5"
 

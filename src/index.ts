@@ -6,8 +6,10 @@ import { buildGrid } from './grid.js';
 import { placeLogo, LogoPosition } from './logo.js';
 import { generateTetrominoes } from './tetromino.js';
 import { computeFallingAnimation } from './animator.js';
+import { computeSnakeAnimation } from './snake.js';
 import { renderSvg } from './svg-renderer.js';
 import { GITHUB_LIGHT, GITHUB_DARK } from './palettes.js';
+import type { AnimationMode } from './types.js';
 
 
 async function run(): Promise<void> {
@@ -20,9 +22,19 @@ async function run(): Promise<void> {
     const logoPosition = (core.getInput('logo_position') || 'top-right') as LogoPosition;
     const paletteName = core.getInput('palette') || 'auto';
     const animationDuration = parseFloat(core.getInput('animation_duration') || '6.5');
+    const animationMode = (core.getInput('animation_mode') || 'tetromino') as AnimationMode;
+    const foodCount = parseInt(core.getInput('food_count') || '5', 10);
+
+    if (animationMode !== 'tetromino' && animationMode !== 'snake') {
+      throw new Error("animation_mode must be 'tetromino' or 'snake'");
+    }
 
     if (tetrominoCount < 0 || tetrominoCount > 9) {
       throw new Error('tetromino_count must be between 0 and 9');
+    }
+
+    if (foodCount < 1 || foodCount > 15) {
+      throw new Error('food_count must be between 1 and 15');
     }
 
     core.info(`Fetching contributions for ${username}...`);
@@ -40,13 +52,22 @@ async function run(): Promise<void> {
     const palette = paletteName === 'github-dark' ? GITHUB_DARK : GITHUB_LIGHT;
     const darkPalette = paletteName === 'auto' ? GITHUB_DARK : undefined;
 
-    const tetrominoes = generateTetrominoes(tetrominoCount, grid.length, 1.5, placedLogo);
-    core.info(`Generated ${tetrominoes.length} tetrominoes`);
+    let allKeyframes: import('./types.js').AnimationKeyframe[];
+    let effectiveDuration = animationDuration;
 
-    const allKeyframes = tetrominoes.flatMap(t =>
-      computeFallingAnimation(t, animationDuration, palette, grid)
-    );
-    core.info(`Computed ${allKeyframes.length} animation keyframes`);
+    if (animationMode === 'snake') {
+      const result = computeSnakeAnimation(grid, palette, placedLogo, { foodCount });
+      allKeyframes = result.keyframes;
+      effectiveDuration = result.duration;
+      core.info(`Computed ${allKeyframes.length} snake animation keyframes (${effectiveDuration.toFixed(1)}s, ${foodCount} food)`);
+    } else {
+      const tetrominoes = generateTetrominoes(tetrominoCount, grid.length, 1.5, placedLogo);
+      core.info(`Generated ${tetrominoes.length} tetrominoes`);
+      allKeyframes = tetrominoes.flatMap(t =>
+        computeFallingAnimation(t, animationDuration, palette, grid)
+      );
+      core.info(`Computed ${allKeyframes.length} animation keyframes`);
+    }
 
     const cellSize = 11;
     const cellGap = 3;
@@ -56,7 +77,7 @@ async function run(): Promise<void> {
     const svg = renderSvg(grid, allKeyframes, placedLogo, {
       palette,
       darkPalette,
-      animationDuration,
+      animationDuration: effectiveDuration,
       width: svgWidth,
       height: svgHeight,
       cellSize,

@@ -38,6 +38,13 @@ jobs:
           logo: "microsoft"
           output_path: dist/contribution-graph-logo.svg
 
+      - name: Generate graph with snake animation
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: leereilly
+          animation_mode: snake
+          output_path: dist/contribution-graph-snake.svg
+
       - name: Push to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:

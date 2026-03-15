@@ -3,10 +3,11 @@ import { buildGrid } from '../src/grid.js';
 import { placeLogo } from '../src/logo.js';
 import { generateTetrominoes } from '../src/tetromino.js';
 import { computeFallingAnimation } from '../src/animator.js';
+import { computeSnakeAnimation } from '../src/snake.js';
 import { renderSvg } from '../src/svg-renderer.js';
 import { GITHUB_LIGHT, GITHUB_DARK } from '../src/palettes.js';
 import { createSampleContributions, createSmallContributions } from './fixtures/sample-contributions.js';
-import type { RenderOptions, AnimationKeyframe } from '../src/types.js';
+import type { RenderOptions, AnimationKeyframe, AnimationMode } from '../src/types.js';
 
 const CELL_SIZE = 11;
 const CELL_GAP = 3;
@@ -18,32 +19,47 @@ function runPipeline(opts: {
   logo?: string;
   tetrominoCount?: number;
   darkPalette?: typeof GITHUB_DARK;
+  animationMode?: AnimationMode;
+  foodCount?: number;
 }) {
   const cells = opts.contributions ?? createSampleContributions();
   const grid = buildGrid(cells);
   const numCols = grid.length;
   const placedLogo = placeLogo(opts.logo ?? 'microsoft', 'top-right', grid);
-  const tetrominoes = generateTetrominoes(
-    opts.tetrominoCount ?? 3,
-    numCols,
-    STAGGER_INTERVAL,
-    placedLogo,
-  );
-  const allAnimations: AnimationKeyframe[] = [];
-  for (const t of tetrominoes) {
-    allAnimations.push(...computeFallingAnimation(t, ANIMATION_DURATION, GITHUB_LIGHT, grid));
+
+  let allAnimations: AnimationKeyframe[];
+  let effectiveDuration = ANIMATION_DURATION;
+
+  if (opts.animationMode === 'snake') {
+    const result = computeSnakeAnimation(grid, GITHUB_LIGHT, placedLogo, {
+      foodCount: opts.foodCount ?? 5,
+    });
+    allAnimations = result.keyframes;
+    effectiveDuration = result.duration;
+  } else {
+    const tetrominoes = generateTetrominoes(
+      opts.tetrominoCount ?? 3,
+      numCols,
+      STAGGER_INTERVAL,
+      placedLogo,
+    );
+    allAnimations = [];
+    for (const t of tetrominoes) {
+      allAnimations.push(...computeFallingAnimation(t, ANIMATION_DURATION, GITHUB_LIGHT, grid));
+    }
   }
+
   const renderOpts: RenderOptions = {
     palette: GITHUB_LIGHT,
     darkPalette: opts.darkPalette,
-    animationDuration: ANIMATION_DURATION,
+    animationDuration: effectiveDuration,
     width: numCols * (CELL_SIZE + CELL_GAP) - CELL_GAP,
     height: 7 * (CELL_SIZE + CELL_GAP) - CELL_GAP,
     cellSize: CELL_SIZE,
     cellGap: CELL_GAP,
   };
   const svg = renderSvg(grid, allAnimations, placedLogo, renderOpts);
-  return { svg, grid, tetrominoes, allAnimations, placedLogo };
+  return { svg, grid, allAnimations, placedLogo };
 }
 
 describe('Integration: full pipeline', () => {
@@ -175,5 +191,56 @@ describe('Integration: SVG validity', () => {
       expect(el).toContain('repeatCount="1"');
       expect(el).toContain('fill="freeze"');
     }
+  });
+});
+
+describe('Integration: snake mode', () => {
+  it('produces valid SVG with animate elements, food color, and snake color', () => {
+    const { svg } = runPipeline({ animationMode: 'snake', logo: 'none', foodCount: 5 });
+
+    expect(svg).toMatch(/^<svg /);
+    expect(svg).toMatch(/<\/svg>$/);
+
+    const rectCount = (svg.match(/<rect /g) || []).length;
+    expect(rectCount).toBe(371); // 53 × 7
+
+    expect(svg).toContain('<animate');
+
+    // Food color (red) and snake body color (black) must be present
+    expect(svg).toContain('#FF0000');
+    expect(svg).toContain('#000000');
+
+    // Snake uses beginOffset=0 so no staggered begin attributes
+    const beginMatches = svg.match(/begin="[^"]+"/g) || [];
+    for (const b of beginMatches) {
+      expect(b).toBe('begin="0s"');
+    }
+  });
+
+  it('produces valid SVG with snake and logo', () => {
+    const { svg } = runPipeline({ animationMode: 'snake', logo: 'microsoft', foodCount: 3 });
+
+    expect(svg).toMatch(/^<svg /);
+    expect(svg).toContain('<animate');
+
+    // Microsoft logo colors present
+    expect(svg).toContain('#F25022');
+    expect(svg).toContain('#7FBA00');
+
+    // Snake food and body colors present
+    expect(svg).toContain('#FF0000');
+    expect(svg).toContain('#000000');
+  });
+
+  it('works with 1 food cell', () => {
+    const { svg } = runPipeline({ animationMode: 'snake', logo: 'none', foodCount: 1 });
+    expect(svg).toContain('<animate');
+    expect(svg).toContain('#FF0000');
+  });
+
+  it('works with 15 food cells', () => {
+    const { svg } = runPipeline({ animationMode: 'snake', logo: 'none', foodCount: 15 });
+    expect(svg).toContain('<animate');
+    expect(svg).toContain('#FF0000');
   });
 });

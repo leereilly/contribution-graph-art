@@ -59,3 +59,26 @@ export interface RenderOptions {
   cellSize: number;
   cellGap: number;
 }
+
+export type AnimationMode = 'tetromino' | 'snake';
+
+export interface SnakeOptions {
+  initialLength: number;
+  maxSteps: number;
+  wrap: boolean;
+  foodCount: number;
+}
+
+export interface GridPoint {
+  x: number; // col
+  y: number; // row
+}
+
+export interface SnakeStep extends GridPoint {
+  ate: boolean;
+}
+
+export interface FoodCell {
+  x: number;
+  y: number;
+}

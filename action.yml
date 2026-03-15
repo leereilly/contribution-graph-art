@@ -1,0 +1,47 @@
+name: "contribuart"
+description: "Generate an animated contribution graph SVG with falling tetrominoes and optional logo overlay"
+author: "leereilly"
+branding:
+  icon: "grid"
+  color: "green"
+
+inputs:
+  github_user_name:
+    description: "GitHub username to fetch contribution data for"
+    required: true
+  github_token:
+    description: "GitHub token for API access"
+    required: false
+    default: ${{ github.token }}
+  output_path:
+    description: "Output file path for the generated SVG"
+    required: false
+    default: "dist/contribution-graph.svg"
+  tetromino_count:
+    description: "Number of falling tetrominoes (0–9)"
+    required: false
+    default: "3"
+  logo:
+    description: "Logo to overlay on the grid (e.g., 'microsoft', 'none')"
+    required: false
+    default: "none"
+  logo_position:
+    description: "Position of the logo ('top-right', 'top-left', 'bottom-right', 'bottom-left')"
+    required: false
+    default: "top-right"
+  palette:
+    description: "Color palette ('github-light', 'github-dark', 'auto')"
+    required: false
+    default: "auto"
+  animation_duration:
+    description: "Total animation duration in seconds"
+    required: false
+    default: "6.5"
+
+outputs:
+  svg_path:
+    description: "Path to the generated SVG file"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"

@@ -1,6 +1,6 @@
 # 🧩 Contribution Graph Art
 
-Generate an animated SVG of your GitHub contribution graph with falling [Tetris](https://en.wikipedia.org/wiki/Tetris) pieces and an optional logo overlay — all as a GitHub Action.
+Generate an animated SVG of your GitHub contribution graph with falling [Tetris](https://en.wikipedia.org/wiki/Tetris) pieces or a classic [Snake](https://en.wikipedia.org/wiki/Snake_(video_game_genre)) game animation, with an optional logo overlay — all as a GitHub Action.
 
 > The images below are generated daily from [@leereilly](https://github.com/leereilly)'s contribution graph via [this workflow](.github/workflows/contribution-graph-art.yml).
 
@@ -34,6 +34,16 @@ Generate an animated SVG of your GitHub contribution graph with falling [Tetris]
   </picture>
 </p>
 
+### Snake
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-snake.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-snake.svg">
+    <img alt="Contribution graph with Snake animation" src="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-snake.svg">
+  </picture>
+</p>
+
 ## Usage
 
 ### Minimal
@@ -44,7 +54,7 @@ Generate an animated SVG of your GitHub contribution graph with falling [Tetris]
     github_user_name: ${{ github.repository_owner }}
 ```
 
-### Full Configuration
+### Full Configuration (Tetromino)
 
 ```yaml
 - uses: leereilly/contribution-graph-art@v1
@@ -57,6 +67,17 @@ Generate an animated SVG of your GitHub contribution graph with falling [Tetris]
     logo_position: "top-right"
     palette: "auto"
     animation_duration: "8"
+```
+
+### Snake Mode
+
+```yaml
+- uses: leereilly/contribution-graph-art@v1
+  with:
+    github_user_name: ${{ github.repository_owner }}
+    animation_mode: "snake"
+    food_count: "5"
+    output_path: dist/contribution-graph-snake.svg
 ```
 
 ### Complete Workflow Example
@@ -104,6 +125,14 @@ jobs:
           logo: "microsoft"
           output_path: dist/contribution-graph-logo.svg
 
+      - name: Generate graph with snake animation
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          animation_mode: "snake"
+          food_count: "5"
+          output_path: dist/contribution-graph-snake.svg
+
       - name: Push to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
@@ -132,11 +161,13 @@ Replace `USERNAME` with your GitHub username.
 | `github_user_name` | **Yes** | — | GitHub username to fetch contribution data for |
 | `github_token` | No | `${{ github.token }}` | GitHub token for API access |
 | `output_path` | No | `dist/contribution-graph.svg` | Output file path for the generated SVG |
-| `tetromino_count` | No | `3` | Number of falling tetrominoes (0–9) |
+| `animation_mode` | No | `tetromino` | Animation mode (`tetromino` or `snake`) |
+| `tetromino_count` | No | `3` | Number of falling tetrominoes (0–9, tetromino mode only) |
+| `food_count` | No | `5` | Number of red food squares for the snake to eat (1–15, snake mode only) |
 | `logo` | No | `none` | Logo to overlay on the grid (e.g. `microsoft`, `none`) |
 | `logo_position` | No | `top-right` | Logo position (`top-right`, `top-left`, `bottom-right`, `bottom-left`) |
 | `palette` | No | `auto` | Color palette (`github-light`, `github-dark`, `auto`) |
-| `animation_duration` | No | `6.5` | Total animation duration in seconds |
+| `animation_duration` | No | `6.5` | Total animation duration in seconds (tetromino mode only; snake mode auto-calculates) |
 
 ## Outputs
 
@@ -148,10 +179,11 @@ Replace `USERNAME` with your GitHub username.
 
 1. **Fetches** your contribution data from the GitHub GraphQL API
 2. **Builds** a 53×7 grid matching GitHub's contribution graph layout
-3. **Places** randomly selected tetromino pieces (I, O, T, S, Z, L, J) across the grid
-4. **Animates** each piece falling top-to-bottom using SVG `<animate>` elements with discrete keyframes
-5. **Overlays** an optional logo (e.g. Microsoft) in a corner of the grid
-6. **Outputs** a single animated SVG file
+3. **Animates** using the chosen mode:
+   - **Tetromino** — randomly selected pieces (I, O, T, S, Z, L, J) fall top-to-bottom across the grid
+   - **Snake** — a classic arcade snake slithers across the grid eating red food squares, growing longer with each bite, then exits off the right edge
+4. **Overlays** an optional logo (e.g. Microsoft) in a corner of the grid
+5. **Outputs** a single animated SVG file using `<animate>` elements with discrete keyframes
 
 The `auto` palette uses CSS `@media (prefers-color-scheme)` so the graph adapts to the viewer's light/dark mode setting.
 

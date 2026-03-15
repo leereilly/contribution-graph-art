@@ -1,10 +1,10 @@
-# ConribuArt: GitHub Contribution Graph + Tetromino Animation — Research & Implementation Plan
+# Contribution Graph Art: GitHub Contribution Graph + Tetromino Animation — Research & Implementation Plan
 
 ## Executive Summary
 
-This report covers the design and implementation plan for **contribuart**, a GitHub Action that generates an animated SVG of a user's GitHub contribution graph with falling tetromino pieces and an optional configurable logo (e.g., Microsoft Windows logo) embedded in the grid squares. The existing hand-crafted SVG in the repo (`contribution-graph.svg`) provides an excellent reference implementation — it's a 53×7 grid of `<rect>` elements with `<animate>` children that create the illusion of falling Tetris pieces using discrete CSS animation keyframes[^1]. The Microsoft logo occupies a 2×2 cell block in the top-right corner using the official brand colors[^2].
+This report covers the design and implementation plan for **contribution-graph-art**, a GitHub Action that generates an animated SVG of a user's GitHub contribution graph with falling tetromino pieces and an optional configurable logo (e.g., Microsoft Windows logo) embedded in the grid squares. The existing hand-crafted SVG in the repo (`contribution-graph.svg`) provides an excellent reference implementation — it's a 53×7 grid of `<rect>` elements with `<animate>` children that create the illusion of falling Tetris pieces using discrete CSS animation keyframes[^1]. The Microsoft logo occupies a 2×2 cell block in the top-right corner using the official brand colors[^2].
 
-Research into similar projects reveals two major prior-art GitHub Actions: **[Platane/snk](https://github.com/Platane/snk)** (5,660+ stars, snake game on contribution graph)[^3] and **[abozanona/pacman-contribution-graph](https://github.com/abozanona/pacman-contribution-graph)** (93+ stars, Pac-Man game)[^4]. Both fetch contribution data via the GitHub GraphQL API's `contributionCalendar` endpoint, render animated SVGs, and are packaged as GitHub Actions for easy profile README integration. This project ("contribuart") differentiates itself with a Tetris/tetromino theme and configurable brand logo overlay.
+Research into similar projects reveals two major prior-art GitHub Actions: **[Platane/snk](https://github.com/Platane/snk)** (5,660+ stars, snake game on contribution graph)[^3] and **[abozanona/pacman-contribution-graph](https://github.com/abozanona/pacman-contribution-graph)** (93+ stars, Pac-Man game)[^4]. Both fetch contribution data via the GitHub GraphQL API's `contributionCalendar` endpoint, render animated SVGs, and are packaged as GitHub Actions for easy profile README integration. This project ("contribution-graph-art") differentiates itself with a Tetris/tetromino theme and configurable brand logo overlay.
 
 ---
 
@@ -153,7 +153,7 @@ This cell appears at t=0.1538 (1.0s) and disappears at t=0.3077 (2.0s)[^7].
 
 ### 2.3 Comparison Table
 
-| Feature | Platane/snk | abozanona/pacman | **contribuart (planned)** |
+| Feature | Platane/snk | abozanona/pacman | **contribution-graph-art (planned)** |
 |---------|-------------|------------------|---------------------------|
 | Theme | Snake game | Pac-Man game | Tetromino falling |
 | Stars | 5,660+ | 93+ | New |
@@ -270,7 +270,7 @@ query ($login: String!) {
 ### Project Structure
 
 ```
-contribuart/
+contribution-graph-art/
 ├── action.yml                    # GitHub Action definition
 ├── package.json
 ├── tsconfig.json
@@ -460,7 +460,7 @@ Follow Platane/snk's approach with CSS custom properties[^10]:
 **5.1 — action.yml**
 
 ```yaml
-name: "contribuart"
+name: "contribution-graph-art"
 description: "Generate an animated contribution graph SVG with falling tetrominoes and optional logo overlay"
 author: "leereilly"
 branding:
@@ -553,7 +553,7 @@ Include a `demo/` script or workflow that generates sample SVGs for manual visua
 ### Minimal Usage
 
 ```yaml
-- uses: leereilly/contribuart@v1
+- uses: leereilly/contribution-graph-art@v1
   with:
     github_user_name: ${{ github.repository_owner }}
 ```
@@ -561,7 +561,7 @@ Include a `demo/` script or workflow that generates sample SVGs for manual visua
 ### Full Configuration
 
 ```yaml
-- uses: leereilly/contribuart@v1
+- uses: leereilly/contribution-graph-art@v1
   with:
     github_user_name: ${{ github.repository_owner }}
     github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -594,7 +594,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate contribution graph SVG
-        uses: leereilly/contribuart@v1
+        uses: leereilly/contribution-graph-art@v1
         with:
           github_user_name: ${{ github.repository_owner }}
           tetromino_count: "3"
@@ -651,7 +651,7 @@ This pattern is established by both snk[^3] and pacman-contribution-graph[^4] an
 
 ### Assumptions Made
 
-1. The action will be published to the GitHub Marketplace under `leereilly/contribuart`
+1. The action will be published to the GitHub Marketplace under `leereilly/contribution-graph-art`
 2. TypeScript + Node.js 20 is the preferred stack (matches all prior art)
 3. SVG-only output for v1; GIF support can be added later
 4. The `github.token` provided by Actions has sufficient permissions for the GraphQL contribution query
@@ -661,13 +661,13 @@ This pattern is established by both snk[^3] and pacman-contribution-graph[^4] an
 
 ## 9. Footnotes
 
-[^1]: `/Users/leereilly/github/contribuart/contribution-graph.svg` — hand-crafted reference SVG, 371 rect elements in 53×7 grid layout
-[^2]: `/Users/leereilly/github/contribuart/contribution-graph.svg` — Microsoft logo at pixel positions (714,0), (728,0), (714,14), (728,14) using brand colors #F25022, #7FBA00, #00A4EF, #FFB900
+[^1]: `/Users/leereilly/github/contribution-graph-art/contribution-graph.svg` — hand-crafted reference SVG, 371 rect elements in 53×7 grid layout
+[^2]: `/Users/leereilly/github/contribution-graph-art/contribution-graph.svg` — Microsoft logo at pixel positions (714,0), (728,0), (714,14), (728,14) using brand colors #F25022, #7FBA00, #00A4EF, #FFB900
 [^3]: [Platane/snk](https://github.com/Platane/snk) — README.md, 5,660+ stars, generates snake game from contribution graph
 [^4]: [abozanona/pacman-contribution-graph](https://github.com/abozanona/pacman-contribution-graph) — README.md, 93+ stars, Pac-Man contribution graph animation
-[^5]: `/Users/leereilly/github/contribuart/contribution-graph.svg` — 371 `<rect>` elements confirmed via `grep -c '<rect'`
+[^5]: `/Users/leereilly/github/contribution-graph-art/contribution-graph.svg` — 371 `<rect>` elements confirmed via `grep -c '<rect'`
 [^6]: [Platane/snk](https://github.com/Platane/snk) — `packages/action/palettes.ts`, defines `github-light` and `github-dark` color palettes
-[^7]: `/Users/leereilly/github/contribuart/contribution-graph.svg` — 54 `<animate>` elements in 3 groups (begin=0s: 18 cells, begin=1.5s: 19 cells, begin=3.0s: 17 cells) using `calcMode="discrete"`
+[^7]: `/Users/leereilly/github/contribution-graph-art/contribution-graph.svg` — 54 `<animate>` elements in 3 groups (begin=0s: 18 cells, begin=1.5s: 19 cells, begin=3.0s: 17 cells) using `calcMode="discrete"`
 [^8]: [Platane/snk](https://github.com/Platane/snk) — `packages/` directory containing action, demo, draw, gif-creator, github-user-contribution, github-user-contribution-service, solver, svg-creator, types
 [^9]: [Platane/snk](https://github.com/Platane/snk) — `packages/github-user-contribution/index.ts`, GraphQL query using `contributionsCollection.contributionCalendar`
 [^10]: [Platane/snk](https://github.com/Platane/snk) — `packages/svg-creator/index.ts`, `generateColorVar()` function with CSS custom properties and `@media (prefers-color-scheme: dark)` support

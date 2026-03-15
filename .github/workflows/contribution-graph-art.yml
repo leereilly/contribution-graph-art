@@ -1,0 +1,47 @@
+name: Generate Contribution Art
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # daily at midnight UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate graph with tetrominoes only
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: leereilly
+          tetromino_count: "5"
+          output_path: dist/contribution-graph-tetrominoes.svg
+
+      - name: Generate graph with logo and tetrominoes
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: leereilly
+          tetromino_count: "3"
+          logo: "microsoft"
+          output_path: dist/contribution-graph-logo-tetrominoes.svg
+
+      - name: Generate graph with logo only
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: leereilly
+          tetromino_count: "0"
+          logo: "microsoft"
+          output_path: dist/contribution-graph-logo.svg
+
+      - name: Push to output branch
+        uses: crazy-max/ghaction-github-pages@v3.1.0
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,5 +1,5 @@
 {
-  "name": "contribuart",
+  "name": "contribution-graph-art",
   "version": "1.0.0",
   "description": "Generate an animated contribution graph SVG with falling tetrominoes and optional logo overlay",
   "private": true,

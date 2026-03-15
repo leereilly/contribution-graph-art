@@ -1,9 +1,37 @@
-# 🧩 ConribuArt
+# 🧩 Contribution Graph Art
 
 Generate an animated SVG of your GitHub contribution graph with falling [Tetris](https://en.wikipedia.org/wiki/Tetris) pieces and an optional logo overlay — all as a GitHub Action.
 
+> The images below are generated daily from [@leereilly](https://github.com/leereilly)'s contribution graph via [this workflow](.github/workflows/contribution-graph-art.yml).
+
+### Tetrominoes only (5 pieces)
+
 <p align="center">
-  <img src="contribution-graph.svg" alt="Contribution graph with falling tetrominoes" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-tetrominoes.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-tetrominoes.svg">
+    <img alt="Contribution graph with 5 falling tetrominoes" src="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-tetrominoes.svg">
+  </picture>
+</p>
+
+### Microsoft logo + tetrominoes (3 pieces)
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-logo-tetrominoes.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-logo-tetrominoes.svg">
+    <img alt="Contribution graph with Microsoft logo and 3 falling tetrominoes" src="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-logo-tetrominoes.svg">
+  </picture>
+</p>
+
+### Microsoft logo only
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-logo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-logo.svg">
+    <img alt="Contribution graph with Microsoft logo" src="https://raw.githubusercontent.com/leereilly/contribution-graph-art/output/contribution-graph-logo.svg">
+  </picture>
 </p>
 
 ## Usage
@@ -11,7 +39,7 @@ Generate an animated SVG of your GitHub contribution graph with falling [Tetris]
 ### Minimal
 
 ```yaml
-- uses: leereilly/contribuart@v1
+- uses: leereilly/contribution-graph-art@v1
   with:
     github_user_name: ${{ github.repository_owner }}
 ```
@@ -19,7 +47,7 @@ Generate an animated SVG of your GitHub contribution graph with falling [Tetris]
 ### Full Configuration
 
 ```yaml
-- uses: leereilly/contribuart@v1
+- uses: leereilly/contribution-graph-art@v1
   with:
     github_user_name: ${{ github.repository_owner }}
     github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -33,14 +61,14 @@ Generate an animated SVG of your GitHub contribution graph with falling [Tetris]
 
 ### Complete Workflow Example
 
-Create `.github/workflows/contribuart.yml` in your profile repo (`username/username`):
+Create `.github/workflows/contribution-graph-art.yml` in your profile repo (`username/username`):
 
 ```yaml
 name: Generate Contribution Art
 
 on:
   schedule:
-    - cron: "0 0 * * *" # daily
+    - cron: "0 0 * * *" # daily at midnight UTC
   workflow_dispatch:
   push:
     branches: [main]
@@ -53,12 +81,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate contribution graph SVG
-        uses: leereilly/contribuart@v1
+      - name: Generate graph with tetrominoes only
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          tetromino_count: "5"
+          output_path: dist/contribution-graph-tetrominoes.svg
+
+      - name: Generate graph with logo and tetrominoes
+        uses: leereilly/contribution-graph-art@v1
         with:
           github_user_name: ${{ github.repository_owner }}
           tetromino_count: "3"
           logo: "microsoft"
+          output_path: dist/contribution-graph-logo-tetrominoes.svg
+
+      - name: Generate graph with logo only
+        uses: leereilly/contribution-graph-art@v1
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          tetromino_count: "0"
+          logo: "microsoft"
+          output_path: dist/contribution-graph-logo.svg
 
       - name: Push to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
@@ -73,9 +117,9 @@ Then add this to your profile `README.md`:
 
 ```html
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/USERNAME/USERNAME/output/contribution-graph.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/USERNAME/USERNAME/output/contribution-graph.svg">
-  <img alt="Contribution graph with falling tetrominoes" src="https://raw.githubusercontent.com/USERNAME/USERNAME/output/contribution-graph.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/USERNAME/USERNAME/output/contribution-graph-logo-tetrominoes.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/USERNAME/USERNAME/output/contribution-graph-logo-tetrominoes.svg">
+  <img alt="Contribution graph with falling tetrominoes" src="https://raw.githubusercontent.com/USERNAME/USERNAME/output/contribution-graph-logo-tetrominoes.svg">
 </picture>
 ```
 
